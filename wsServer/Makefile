@@ -18,7 +18,7 @@ AR        = ar
 LIB_WS    = libws.a
 INCLUDE   = include
 CFLAGS   += -Wall -Wextra -O2
-CFLAGS   += -I $(INCLUDE) -std=c99 -pedantic
+CFLAGS   += -I $(INCLUDE) -std=c99 -pedantic -Wno-sign-compare
 LDLIBS    = $(LIB_WS) -pthread
 ARFLAGS   =  cru
 MCSS_DIR ?= /usr/bin/

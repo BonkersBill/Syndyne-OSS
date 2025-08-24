@@ -15,9 +15,9 @@
 
 CC       ?= gcc
 AR        = ar
-LIB_WS    = libws.a
+LIB_WS    = libws.so
 INCLUDE   = include
-CFLAGS   += -Wall -Wextra -O2
+CFLAGS   += -Wall -Wextra -O2 -fpic
 CFLAGS   += -I $(INCLUDE) -std=c99 -pedantic -Wno-sign-compare
 LDLIBS    = $(LIB_WS) -pthread
 ARFLAGS   =  cru
@@ -73,9 +73,9 @@ TOYWS  = extra/toyws
 
 # All
 ifeq ($(AFL_FUZZ),no)
-all: Makefile libws.a examples $(TOYWS)/toyws_test
+all: Makefile $(LIB_WS) examples $(TOYWS)/toyws_test
 else
-all: Makefile libws.a fuzzy
+all: Makefile $(LIB_WS) fuzzy
 endif
 
 #
@@ -101,9 +101,11 @@ src/sha1.o: include/sha1.h
 src/utf8.o: include/utf8.h
 
 # Lib
-$(LIB_WS): $(WS_OBJ)
-	@echo "  AR      $@"
-	$(Q)$(AR) $(ARFLAGS) $(LIB_WS) $^
+#$(LIB_WS): $(WS_OBJ)
+#	@echo "  AR      $@"
+#	$(Q)$(AR) $(ARFLAGS) $(LIB_WS) $^
+$(LIB_WS) : $(WS_OBJ)
+	$(Q) $(CC) -shared -o $@ $(WS_OBJ)
 
 # Examples
 examples: examples/echo/echo examples/ping/ping
@@ -121,7 +123,7 @@ tests_check:
 	$(MAKE) check_results -C tests/
 
 # Fuzzing tests
-fuzzy: libws.a
+fuzzy: $(LIB_WS)
 	$(MAKE) -C tests/fuzzy
 
 # ToyWS client
@@ -130,11 +132,12 @@ $(TOYWS)/toyws_test: $(TOYWS)/tws_test.o $(TOYWS)/toyws.o
 	$(Q)$(CC) $(CFLAGS) $^ -o $@
 
 # Install rules
-install: libws.a wsserver.pc
+install: $(LIB_WS) wsserver.pc
 	@echo "  INSTALL      $@"
 	@#Library
 	install -d $(DESTDIR)$(LIBDIR)
 	install -m 644 $(LIB_WS) $(DESTDIR)$(LIBDIR)
+	ldconfig
 	@#Headers
 	install -d $(DESTDIR)$(INCDIR)/wsserver
 	install -m 644 $(INCLUDE)/*.h $(DESTDIR)$(INCDIR)/wsserver

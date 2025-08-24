@@ -21,3 +21,9 @@ config.h
 defconfig
 env/*
 docs-venv
+CMakeCache.txt
+CMakeFiles/*
+Makefile
+cmake_install.cmake
+lib/
+lvgl.pc
